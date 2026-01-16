@@ -1,0 +1,67 @@
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.local
+.env.development
+.env.production
+
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+dist/
+.next/
+out/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# =========================
+# .NET / Backend
+# =========================
+bin/
+obj/
+
+# Rider / Visual Studio
+.vs/
+*.user
+*.suo
+
+# =========================
+# Testing
+# =========================
+TestResults/
+
+# =========================
+# Docker
+# =========================
+**/docker-data/
+**/mongo-data/
+**/data/
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+!.vscode/extensions.json
+
+# =========================
+# Certificates
+# =========================
+*.pfx
+*.cer
+
+# =========================
+# Misc
+# =========================
+*.log
