@@ -37,6 +37,12 @@ public class ProductsController : ControllerBase
         return Ok(await _mediator.Send(new GetProductsQuery(search, categoryId, page, pageSize)));
     }
 
+    [HttpGet("low-stock")]
+    public async Task<IActionResult> GetLowStock()
+    {
+        return Ok(await _mediator.Send(new GetLowStockProductsQuery()));
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -46,6 +52,13 @@ public class ProductsController : ControllerBase
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductCommand command)
+    {
+        await _mediator.Send(command with { Id = id });
+        return NoContent();
+    }
+
+    [HttpPut("{id}/stock")]
+    public async Task<IActionResult> UpdateStock(Guid id, [FromBody] UpdateProductStockCommand command)
     {
         await _mediator.Send(command with { Id = id });
         return NoContent();
