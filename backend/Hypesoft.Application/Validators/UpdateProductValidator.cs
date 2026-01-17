@@ -3,9 +3,9 @@ using Hypesoft.Application.Commands;
 
 namespace Hypesoft.Application.Validators;
 
-public class CreateProductValidator : AbstractValidator<CreateProductCommand>
+public class UpdateProductValidator : AbstractValidator<UpdateProductCommand>
 {
-    public CreateProductValidator()
+    public UpdateProductValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty()
@@ -16,10 +16,7 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
             .MaximumLength(100);
 
         RuleFor(x => x.Price).GreaterThan(0);
-
         RuleFor(x => x.Stock).GreaterThanOrEqualTo(0);
-
         RuleFor(x => x.CategoryId).NotEmpty();
     }
 }
-

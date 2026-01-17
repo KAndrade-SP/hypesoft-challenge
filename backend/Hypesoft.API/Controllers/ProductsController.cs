@@ -17,22 +17,35 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateProductCommand command)
+    public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
     {
         var id = await _mediator.Send(command);
         return CreatedAtAction(nameof(GetById), new { id }, null);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _mediator.Send(new GetProductsQuery(null, null)));
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] Guid? categoryId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
+        return Ok(await _mediator.Send(new GetProductsQuery(search, categoryId, page, pageSize)));
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
-        => Ok(await _mediator.Send(new GetProductByIdQuery(id)));
+    {
+        var product = await _mediator.Send(new GetProductByIdQuery(id));
+        return product is null ? NotFound() : Ok(product);
+    }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, UpdateProductCommand command)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductCommand command)
     {
         await _mediator.Send(command with { Id = id });
         return NoContent();

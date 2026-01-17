@@ -27,6 +27,12 @@ public class Product
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Product description is required");
 
+        if (name.Length > 45)
+            throw new ArgumentException("Product name must be at most 45 characters");
+
+        if (description.Length > 100)
+            throw new ArgumentException("Product description must be at most 100 characters");
+
         if (price <= 0)
             throw new ArgumentException("Price must be greater than zero");
 
