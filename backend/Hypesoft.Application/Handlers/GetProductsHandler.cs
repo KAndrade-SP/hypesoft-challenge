@@ -42,6 +42,7 @@ public class GetProductsHandler : IRequestHandler<GetProductsQuery, IEnumerable<
             p.Description,
             p.Price,
             p.StockQuantity,
+            p.CategoryId,
             categoryDict.GetValueOrDefault(p.CategoryId, "Unknown")
         ));
     }

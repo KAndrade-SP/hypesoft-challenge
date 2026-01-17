@@ -70,4 +70,9 @@ public class ProductRepository : IProductRepository
             .Where(p => p.StockQuantity < 10)
             .ToListAsync();
     }
+
+    public async Task<bool> AnyByCategoryAsync(Guid categoryId)
+    {
+        return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
+    }
 }

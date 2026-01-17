@@ -13,4 +13,5 @@ public interface IProductRepository
     Task<List<Product>> SearchByNameAsync(string name);
     Task<List<Product>> GetByCategoryAsync(Guid categoryId);
     Task<List<Product>> GetLowStockAsync();
+    Task<bool> AnyByCategoryAsync(Guid categoryId);
 }
