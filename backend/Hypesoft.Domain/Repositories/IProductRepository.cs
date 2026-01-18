@@ -10,8 +10,11 @@ public interface IProductRepository
     Task DeleteAsync(Guid id);
 
     Task<List<Product>> GetAllAsync(int page, int pageSize);
+    Task<List<Product>> GetAllAsync();
     Task<List<Product>> SearchByNameAsync(string name);
     Task<List<Product>> GetByCategoryAsync(Guid categoryId);
     Task<List<Product>> GetLowStockAsync();
     Task<bool> AnyByCategoryAsync(Guid categoryId);
+    Task<int> CountAsync();
+    Task<decimal> GetTotalStockValueAsync();
 }

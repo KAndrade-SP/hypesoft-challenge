@@ -1,101 +1,121 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { ProductsByCategoryChart } from "@/components/charts/ProductsByCategoryChart"
+import { AppShell } from "@/components/layout/AppShell"
+import { Topbar } from "@/components/layout/Topbar"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useDashboard } from "@/hooks/useDashboard"
+import { currencyFormatter } from "@/utils/format"
+
+export default function DashboardPage() {
+  const { data, error } = useDashboard()
+  const lowStock = data?.lowStockProducts ?? []
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <AppShell active="dashboard">
+      <Topbar
+        title="Dashboard"
+        subtitle="Overview of stock and products."
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {error ? (
+        <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      ) : null}
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total products</CardTitle>
+            <Badge variant="outline">Current</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold">
+              {data?.totalProducts ?? "--"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Active items in the catalog.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory value</CardTitle>
+            <Badge variant="success">BRL</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold">
+              {data ? currencyFormatter.format(data.totalStockValue) : "--"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Price multiplied by quantity.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Low stock</CardTitle>
+            <Badge variant="warning">Alert</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold">{lowStock.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Products below 10 units.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <Card className="min-h-[320px]">
+          <CardHeader>
+            <div>
+              <CardTitle>Products by category</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Catalog distribution.
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent className="flex h-[250px] items-center justify-center">
+            <ProductsByCategoryChart data={data?.productsByCategory ?? []} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Low stock</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Needs replenishment.
+              </p>
+            </div>
+            <Badge variant="warning">{lowStock.length}</Badge>
+          </CardHeader>
+          <CardContent className="max-h-64 space-y-3 overflow-auto pr-1">
+            {lowStock.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-2xl border border-border/60 bg-white/70 px-3 py-2 text-sm"
+              >
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.categoryName}
+                  </p>
+                </div>
+                <Badge variant="warning">{item.stockQuantity} units</Badge>
+              </div>
+            ))}
+            {lowStock.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                No items below minimum.
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </section>
+    </AppShell>
+  )
 }

@@ -15,7 +15,10 @@ public class UpdateProductValidator : AbstractValidator<UpdateProductCommand>
             .NotEmpty()
             .MaximumLength(100);
 
-        RuleFor(x => x.Price).GreaterThan(0);
+        RuleFor(x => x.Price)
+            .GreaterThan(0)
+            .Must(value => decimal.Round(value, 2) == value)
+            .WithMessage("Price must have at most 2 decimal places");
         RuleFor(x => x.Stock).GreaterThanOrEqualTo(0);
         RuleFor(x => x.CategoryId).NotEmpty();
     }

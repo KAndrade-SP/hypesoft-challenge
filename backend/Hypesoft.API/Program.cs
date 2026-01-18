@@ -26,6 +26,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+        policy.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
 builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 var app = builder.Build();
@@ -53,6 +61,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseRouting();
+
+app.UseCors("Frontend");
 
 app.UseAuthorization();
 

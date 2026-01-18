@@ -50,6 +50,11 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
+    public async Task<List<Product>> GetAllAsync()
+    {
+        return await _context.Products.ToListAsync();
+    }
+
     public async Task<List<Product>> SearchByNameAsync(string name)
     {
         return await _context.Products
@@ -74,5 +79,15 @@ public class ProductRepository : IProductRepository
     public async Task<bool> AnyByCategoryAsync(Guid categoryId)
     {
         return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
+    }
+
+    public async Task<int> CountAsync()
+    {
+        return await _context.Products.CountAsync();
+    }
+
+    public async Task<decimal> GetTotalStockValueAsync()
+    {
+        return await _context.Products.SumAsync(p => p.Price * p.StockQuantity);
     }
 }
