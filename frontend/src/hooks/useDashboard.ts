@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useState } from "react"
+import { useKeycloak } from "@react-keycloak/web"
 
 import { getDashboardSummary } from "@/services/dashboard"
 import type { DashboardSummaryDto } from "@/types/api"
 import { getErrorMessage } from "@/utils/errors"
 
 export function useDashboard() {
+  const { keycloak, initialized } = useKeycloak()
   const [data, setData] = useState<DashboardSummaryDto | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
+    if (!initialized || !keycloak?.authenticated) {
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -22,7 +27,7 @@ export function useDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [initialized, keycloak])
 
   useEffect(() => {
     refresh()

@@ -1,12 +1,14 @@
 using Hypesoft.Application.Commands;
 using Hypesoft.Application.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hypesoft.API.Controllers;
 
 [ApiController]
 [Route("api/products")]
+[Authorize(Roles = "admin,manager")]
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -64,6 +66,7 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {

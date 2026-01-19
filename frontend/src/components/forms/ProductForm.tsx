@@ -30,6 +30,8 @@ type ProductFormProps = {
   onUpdate: () => void
   onDelete: () => void
   loading: boolean
+  canWrite: boolean
+  canDelete: boolean
 }
 
 export function ProductForm({
@@ -45,6 +47,8 @@ export function ProductForm({
   onUpdate,
   onDelete,
   loading,
+  canWrite,
+  canDelete,
 }: ProductFormProps) {
   const categoryOptions = categories.map((category) => ({
     label: category.name,
@@ -111,7 +115,7 @@ export function ProductForm({
               setCreateForm({ ...createForm, categoryId: value })
             }
           />
-          <Button onClick={onCreate} disabled={loading}>
+          <Button onClick={onCreate} disabled={loading || !canWrite}>
             Create product
           </Button>
         </CardContent>
@@ -161,16 +165,21 @@ export function ProductForm({
             onChange={(value) => setEditForm({ ...editForm, categoryId: value })}
           />
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onUpdate} disabled={!editingId || loading}>
+            <Button
+              onClick={onUpdate}
+              disabled={!editingId || loading || !canWrite}
+            >
               Save changes
             </Button>
-            <Button
-              variant="destructive"
-              onClick={onDelete}
-              disabled={!editingId || loading}
-            >
-              Delete
-            </Button>
+            {canDelete ? (
+              <Button
+                variant="destructive"
+                onClick={onDelete}
+                disabled={!editingId || loading}
+              >
+                Delete
+              </Button>
+            ) : null}
           </div>
         </CardContent>
       </Card>

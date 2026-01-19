@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { useKeycloak } from "@react-keycloak/web"
 
 import {
   createCategory,
@@ -26,6 +27,7 @@ function validateCategoryName(name: string) {
 }
 
 export function useCategories() {
+  const { keycloak, initialized } = useKeycloak()
   const [categories, setCategories] = useState<CategoryDto[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,6 +37,9 @@ export function useCategories() {
   const [editingId, setEditingId] = useState("")
 
   const refresh = useCallback(async () => {
+    if (!initialized || !keycloak?.authenticated) {
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -47,7 +52,7 @@ export function useCategories() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [initialized, keycloak])
 
   useEffect(() => {
     refresh()

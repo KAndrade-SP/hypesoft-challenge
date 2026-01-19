@@ -1,22 +1,23 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
+import type { Metadata } from "next"
+import localFont from "next/font/local"
+import "./globals.css"
+import { KeycloakProvider } from "@/components/layout/KeycloakProvider"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
-});
+})
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
-});
+})
 
 export const metadata: Metadata = {
   title: "Hypesoft Dashboard",
   description: "Products and inventory dashboard",
-};
+}
 
 export default function RootLayout({
   children,
@@ -28,7 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <KeycloakProvider>{children}</KeycloakProvider>
       </body>
     </html>
   );

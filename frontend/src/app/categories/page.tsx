@@ -1,13 +1,20 @@
 "use client"
 
+import { useKeycloak } from "@react-keycloak/web"
+
 import { CategoryForm } from "@/components/forms/CategoryForm"
 import { AppShell } from "@/components/layout/AppShell"
 import { Topbar } from "@/components/layout/Topbar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCategories } from "@/hooks/useCategories"
+import { getUserRoles, hasAnyRole } from "@/utils/roles"
 
 export default function CategoriesPage() {
+  const { keycloak } = useKeycloak()
+  const roles = getUserRoles(keycloak?.tokenParsed)
+  const canWrite = hasAnyRole(roles, ["admin", "manager"])
+  const canDelete = hasAnyRole(roles, ["admin"])
   const {
     categories,
     loading,
@@ -48,6 +55,8 @@ export default function CategoriesPage() {
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         loading={loading}
+        canWrite={canWrite}
+        canDelete={canDelete}
       />
 
       <Card>

@@ -24,6 +24,8 @@ type CategoryFormProps = {
   onUpdate: () => void
   onDelete: () => void
   loading: boolean
+  canWrite: boolean
+  canDelete: boolean
 }
 
 export function CategoryForm({
@@ -38,6 +40,8 @@ export function CategoryForm({
   onUpdate,
   onDelete,
   loading,
+  canWrite,
+  canDelete,
 }: CategoryFormProps) {
   const categoryOptions = categories.map((category) => ({
     label: category.name,
@@ -68,7 +72,7 @@ export function CategoryForm({
             value={createForm.name}
             onChange={handleCreateChange}
           />
-          <Button onClick={onCreate} disabled={loading}>
+          <Button onClick={onCreate} disabled={loading || !canWrite}>
             Create category
           </Button>
         </CardContent>
@@ -91,16 +95,21 @@ export function CategoryForm({
             onChange={handleEditChange}
           />
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onUpdate} disabled={!editingId || loading}>
+            <Button
+              onClick={onUpdate}
+              disabled={!editingId || loading || !canWrite}
+            >
               Save changes
             </Button>
-            <Button
-              variant="destructive"
-              onClick={onDelete}
-              disabled={!editingId || loading}
-            >
-              Delete
-            </Button>
+            {canDelete ? (
+              <Button
+                variant="destructive"
+                onClick={onDelete}
+                disabled={!editingId || loading}
+              >
+                Delete
+              </Button>
+            ) : null}
           </div>
         </CardContent>
       </Card>

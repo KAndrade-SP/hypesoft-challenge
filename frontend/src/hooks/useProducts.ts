@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { useKeycloak } from "@react-keycloak/web"
 
 import { getCategories } from "@/services/categories"
 import {
@@ -73,6 +74,7 @@ function validateProductFields(name: string, description: string) {
 }
 
 export function useProducts() {
+  const { keycloak, initialized } = useKeycloak()
   const [products, setProducts] = useState<ProductDto[]>([])
   const [categories, setCategories] = useState<CategoryDto[]>([])
   const [search, setSearch] = useState("")
@@ -85,19 +87,28 @@ export function useProducts() {
   const [editingId, setEditingId] = useState<string>("")
 
   const loadProducts = useCallback(async () => {
+    if (!initialized || !keycloak?.authenticated) {
+      return
+    }
     const data = await getProducts(
       search.trim() || undefined,
       categoryFilter === "all" ? undefined : categoryFilter
     )
     setProducts(data)
-  }, [categoryFilter, search])
+  }, [categoryFilter, initialized, keycloak, search])
 
   const loadCategories = useCallback(async () => {
+    if (!initialized || !keycloak?.authenticated) {
+      return
+    }
     const data = await getCategories()
     setCategories(data)
-  }, [])
+  }, [initialized, keycloak])
 
   const refresh = useCallback(async () => {
+    if (!initialized || !keycloak?.authenticated) {
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -109,7 +120,7 @@ export function useProducts() {
     } finally {
       setLoading(false)
     }
-  }, [loadCategories, loadProducts])
+  }, [initialized, keycloak, loadCategories, loadProducts])
 
   useEffect(() => {
     refresh()

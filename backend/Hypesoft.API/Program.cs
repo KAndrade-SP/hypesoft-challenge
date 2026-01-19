@@ -3,7 +3,13 @@ using FluentValidation.AspNetCore;
 using Hypesoft.Application.Commands;
 using Hypesoft.Application.Validators;
 using Hypesoft.Infrastructure.Configurations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using Hypesoft.API.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +38,40 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod());
+});
+
+var keycloakUrl = builder.Configuration["KEYCLOAK_URL"] ?? "http://localhost:8080";
+var keycloakRealm = builder.Configuration["KEYCLOAK_REALM"] ?? "hypesoft";
+var keycloakClientId = builder.Configuration["KEYCLOAK_CLIENT_ID"] ?? "hypesoft-api";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.Authority = $"{keycloakUrl}/realms/{keycloakRealm}";
+        options.Audience = keycloakClientId;
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            RoleClaimType = "roles",
+            ValidIssuers = new[]
+            {
+                $"{keycloakUrl}/realms/{keycloakRealm}",
+                $"http://localhost:8080/realms/{keycloakRealm}"
+            }
+        };
+    });
+
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+builder.Services.AddSingleton<IClaimsTransformation, KeycloakRoleClaimsTransformation>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 builder.WebHost.UseUrls("http://0.0.0.0:5000");
@@ -64,9 +104,10 @@ app.UseRouting();
 
 app.UseCors("Frontend");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymous();
 app.MapControllers();
 
 app.Run();

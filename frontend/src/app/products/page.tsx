@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useKeycloak } from "@react-keycloak/web"
 import { Search } from "lucide-react"
 
 import { ProductForm } from "@/components/forms/ProductForm"
@@ -13,8 +14,13 @@ import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { useProducts } from "@/hooks/useProducts"
 import { currencyFormatter } from "@/utils/format"
+import { getUserRoles, hasAnyRole } from "@/utils/roles"
 
 export default function ProductsPage() {
+  const { keycloak } = useKeycloak()
+  const roles = getUserRoles(keycloak?.tokenParsed)
+  const canWrite = hasAnyRole(roles, ["admin", "manager"])
+  const canDelete = hasAnyRole(roles, ["admin"])
   const {
     products,
     categories,
@@ -95,6 +101,8 @@ export default function ProductsPage() {
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         loading={loading}
+        canWrite={canWrite}
+        canDelete={canDelete}
       />
 
       <section className="relative z-0 space-y-4">
@@ -166,7 +174,7 @@ export default function ProductsPage() {
                           onClick={() =>
                             handleStockSave(product.id, product.stockQuantity)
                           }
-                          disabled={loading}
+                          disabled={loading || !canWrite}
                         >
                           Save
                         </Button>

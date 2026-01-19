@@ -1,3 +1,5 @@
+import { getAuthToken } from "@/services/auth"
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
@@ -61,9 +63,18 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return JSON.parse(text) as T
 }
 
+function buildHeaders() {
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  const token = getAuthToken()
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
     cache: "no-store",
   })
 
@@ -73,7 +84,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
     body: JSON.stringify(body),
   })
 
@@ -83,7 +94,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
 export async function apiPut<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
     body: JSON.stringify(body),
   })
 
@@ -93,7 +104,7 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
 export async function apiDelete<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
   })
 
   return handleResponse<T>(response)
