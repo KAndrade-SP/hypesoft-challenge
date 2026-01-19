@@ -9,7 +9,7 @@ import { useDashboard } from "@/hooks/useDashboard"
 import { currencyFormatter } from "@/utils/format"
 
 export default function DashboardPage() {
-  const { data, error } = useDashboard()
+  const { data } = useDashboard()
   const lowStock = data?.lowStockProducts ?? []
 
   return (
@@ -18,12 +18,6 @@ export default function DashboardPage() {
         title="Dashboard"
         subtitle="Overview of stock and products."
       />
-
-      {error ? (
-        <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
-      ) : null}
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card>

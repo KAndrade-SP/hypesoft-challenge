@@ -8,6 +8,7 @@ import {
   updateCategory,
 } from "@/services/categories"
 import type { CategoryDto } from "@/types/api"
+import { toast } from "react-toastify"
 import { getErrorMessage } from "@/utils/errors"
 
 type CategoryFormState = {
@@ -36,6 +37,48 @@ export function useCategories() {
   const [editForm, setEditForm] = useState<CategoryFormState>(emptyForm)
   const [editingId, setEditingId] = useState("")
 
+  useEffect(() => {
+    const storedCreate = window.localStorage.getItem("category_create_form")
+    const storedEdit = window.localStorage.getItem("category_edit_form")
+    const storedEditingId = window.localStorage.getItem("category_editing_id")
+    if (storedCreate) {
+      try {
+        setCreateForm(JSON.parse(storedCreate) as CategoryFormState)
+      } catch {
+        // ignore
+      }
+    }
+    if (storedEdit) {
+      try {
+        setEditForm(JSON.parse(storedEdit) as CategoryFormState)
+      } catch {
+        // ignore
+      }
+    }
+    if (storedEditingId) {
+      setEditingId(storedEditingId)
+    }
+  }, [])
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "category_create_form",
+      JSON.stringify(createForm)
+    )
+  }, [createForm])
+
+  useEffect(() => {
+    window.localStorage.setItem("category_edit_form", JSON.stringify(editForm))
+  }, [editForm])
+
+  useEffect(() => {
+    if (editingId) {
+      window.localStorage.setItem("category_editing_id", editingId)
+    } else {
+      window.localStorage.removeItem("category_editing_id")
+    }
+  }, [editingId])
+
   const refresh = useCallback(async () => {
     if (!initialized || !keycloak?.authenticated) {
       return
@@ -48,7 +91,9 @@ export function useCategories() {
       const data = await getCategories()
       setCategories(data)
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to load categories."))
+      const message = getErrorMessage(error, "Unable to load categories.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -77,6 +122,7 @@ export function useCategories() {
 
     if (fieldError) {
       setError(fieldError)
+      toast.error(fieldError)
       return
     }
 
@@ -87,8 +133,11 @@ export function useCategories() {
       await createCategory({ name: createForm.name })
       setCreateForm(emptyForm)
       await refresh()
+      toast.success("Category created successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to create category."))
+      const message = getErrorMessage(error, "Unable to create category.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -102,6 +151,7 @@ export function useCategories() {
 
     if (fieldError) {
       setError(fieldError)
+      toast.error(fieldError)
       return
     }
 
@@ -111,8 +161,11 @@ export function useCategories() {
     try {
       await updateCategory(editingId, { name: editForm.name })
       await refresh()
+      toast.success("Category updated successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to update category."))
+      const message = getErrorMessage(error, "Unable to update category.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -130,8 +183,11 @@ export function useCategories() {
       setEditingId("")
       setEditForm(emptyForm)
       await refresh()
+      toast.success("Category deleted successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to delete category."))
+      const message = getErrorMessage(error, "Unable to delete category.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -151,5 +207,10 @@ export function useCategories() {
     handleUpdate,
     handleDelete,
     refresh,
+    clearCreateForm: () => setCreateForm(emptyForm),
+    clearEditForm: () => {
+      setEditingId("")
+      setEditForm(emptyForm)
+    },
   }
 }

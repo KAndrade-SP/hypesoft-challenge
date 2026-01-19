@@ -29,7 +29,6 @@ export default function ProductsPage() {
     categoryFilter,
     setCategoryFilter,
     loading,
-    error,
     createForm,
     setCreateForm,
     editForm,
@@ -40,6 +39,8 @@ export default function ProductsPage() {
     handleUpdate,
     handleDelete,
     handleStockUpdate,
+    clearCreateForm,
+    clearEditForm,
   } = useProducts()
 
   const categoryOptions = [
@@ -82,11 +83,6 @@ export default function ProductsPage() {
         }
       />
 
-      {error ? (
-        <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
-      ) : null}
 
       <ProductForm
         products={products}
@@ -103,6 +99,8 @@ export default function ProductsPage() {
         loading={loading}
         canWrite={canWrite}
         canDelete={canDelete}
+        onClearCreate={clearCreateForm}
+        onClearEdit={clearEditForm}
       />
 
       <section className="relative z-0 space-y-4">

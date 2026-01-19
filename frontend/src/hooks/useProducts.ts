@@ -10,6 +10,7 @@ import {
   updateProductStock,
 } from "@/services/products"
 import type { CategoryDto, ProductDto } from "@/types/api"
+import { toast } from "react-toastify"
 import { getErrorMessage } from "@/utils/errors"
 
 type ProductFormState = {
@@ -29,32 +30,41 @@ const emptyForm: ProductFormState = {
 }
 
 const priceRegex = /^\d+([.,]\d{1,2})?$/
+const numberRegex = /^\d+([.,]\d+)?$/
 
 function parsePrice(value: string) {
-
   const normalized = value.replace(",", ".").trim()
-
-  if (!normalized || !priceRegex.test(normalized)) {
-    return null
+  if (!normalized) {
+    return { value: null, error: "Price is required." }
+  }
+  if (!numberRegex.test(normalized)) {
+    return { value: null, error: "Price must be a number." }
+  }
+  if (!priceRegex.test(normalized)) {
+    return { value: null, error: "Price can have up to 2 decimal places." }
   }
 
   const parsed = Number(normalized)
-
   if (Number.isNaN(parsed) || parsed <= 0) {
-    return null
+    return { value: null, error: "Price must be greater than zero." }
   }
 
-  return parsed
+  return { value: parsed, error: null }
 }
 
 function parseStock(value: string) {
-
-  const parsed = Number(value)
-
-  if (Number.isNaN(parsed) || parsed < 0) {
-    return null
+  const normalized = value.trim()
+  if (!normalized) {
+    return { value: null, error: "Stock is required." }
   }
-  return Math.floor(parsed)
+  if (!/^\d+$/.test(normalized)) {
+    return { value: null, error: "Stock must be a whole number." }
+  }
+  const parsed = Number(normalized)
+  if (Number.isNaN(parsed) || parsed < 0) {
+    return { value: null, error: "Stock must be zero or greater." }
+  }
+  return { value: parsed, error: null }
 }
 
 function validateProductFields(name: string, description: string) {
@@ -86,6 +96,45 @@ export function useProducts() {
   const [editForm, setEditForm] = useState<ProductFormState>(emptyForm)
   const [editingId, setEditingId] = useState<string>("")
 
+  useEffect(() => {
+    const storedCreate = window.localStorage.getItem("product_create_form")
+    const storedEdit = window.localStorage.getItem("product_edit_form")
+    const storedEditingId = window.localStorage.getItem("product_editing_id")
+    if (storedCreate) {
+      try {
+        setCreateForm(JSON.parse(storedCreate) as ProductFormState)
+      } catch {
+        // ignore
+      }
+    }
+    if (storedEdit) {
+      try {
+        setEditForm(JSON.parse(storedEdit) as ProductFormState)
+      } catch {
+        // ignore
+      }
+    }
+    if (storedEditingId) {
+      setEditingId(storedEditingId)
+    }
+  }, [])
+
+  useEffect(() => {
+    window.localStorage.setItem("product_create_form", JSON.stringify(createForm))
+  }, [createForm])
+
+  useEffect(() => {
+    window.localStorage.setItem("product_edit_form", JSON.stringify(editForm))
+  }, [editForm])
+
+  useEffect(() => {
+    if (editingId) {
+      window.localStorage.setItem("product_editing_id", editingId)
+    } else {
+      window.localStorage.removeItem("product_editing_id")
+    }
+  }, [editingId])
+
   const loadProducts = useCallback(async () => {
     if (!initialized || !keycloak?.authenticated) {
       return
@@ -116,7 +165,9 @@ export function useProducts() {
     try {
       await Promise.all([loadProducts(), loadCategories()])
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to load products."))
+      const message = getErrorMessage(error, "Unable to load products.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -128,9 +179,11 @@ export function useProducts() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      loadProducts().catch((error) =>
-        setError(getErrorMessage(error, "Failed to fetch products."))
-      )
+      loadProducts().catch((error) => {
+        const message = getErrorMessage(error, "Failed to fetch products.")
+        setError(message)
+        toast.error(message)
+      })
     }, 300)
     return () => clearTimeout(timeout)
   }, [loadProducts])
@@ -163,22 +216,26 @@ export function useProducts() {
 
     if (fieldError) {
       setError(fieldError)
+      toast.error(fieldError)
       return
     }
 
-    const price = parsePrice(createForm.price)
-    const stock = parseStock(createForm.stock)
+    const priceResult = parsePrice(createForm.price)
+    const stockResult = parseStock(createForm.stock)
 
     if (!createForm.categoryId) {
       setError("Select a category.")
+      toast.error("Select a category.")
       return
     }
-    if (!price) {
-      setError("Invalid price. Use up to 2 decimal places.")
+    if (priceResult.error) {
+      setError(priceResult.error)
+      toast.error(priceResult.error)
       return
     }
-    if (stock === null) {
-      setError("Invalid stock.")
+    if (stockResult.error) {
+      setError(stockResult.error)
+      toast.error(stockResult.error)
       return
     }
 
@@ -189,14 +246,17 @@ export function useProducts() {
       await createProduct({
         name: createForm.name,
         description: createForm.description,
-        price,
-        stock,
+        price: priceResult.value ?? 0,
+        stock: stockResult.value ?? 0,
         categoryId: createForm.categoryId,
       })
       setCreateForm(emptyForm)
       await refresh()
+      toast.success("Product created successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to create product."))
+      const message = getErrorMessage(error, "Unable to create product.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -209,22 +269,26 @@ export function useProducts() {
     const fieldError = validateProductFields(editForm.name, editForm.description)
     if (fieldError) {
       setError(fieldError)
+      toast.error(fieldError)
       return
     }
 
-    const price = parsePrice(editForm.price)
-    const stock = parseStock(editForm.stock)
+    const priceResult = parsePrice(editForm.price)
+    const stockResult = parseStock(editForm.stock)
 
     if (!editForm.categoryId) {
       setError("Select a category.")
+      toast.error("Select a category.")
       return
     }
-    if (!price) {
-      setError("Invalid price. Use up to 2 decimal places.")
+    if (priceResult.error) {
+      setError(priceResult.error)
+      toast.error(priceResult.error)
       return
     }
-    if (stock === null) {
-      setError("Invalid stock.")
+    if (stockResult.error) {
+      setError(stockResult.error)
+      toast.error(stockResult.error)
       return
     }
 
@@ -236,13 +300,16 @@ export function useProducts() {
         id: editingId,
         name: editForm.name,
         description: editForm.description,
-        price,
-        stock,
+        price: priceResult.value ?? 0,
+        stock: stockResult.value ?? 0,
         categoryId: editForm.categoryId,
       })
       await refresh()
+      toast.success("Product updated successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to update product."))
+      const message = getErrorMessage(error, "Unable to update product.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -260,8 +327,11 @@ export function useProducts() {
       setEditingId("")
       setEditForm(emptyForm)
       await refresh()
+      toast.success("Product deleted successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to delete product."))
+      const message = getErrorMessage(error, "Unable to delete product.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -270,7 +340,8 @@ export function useProducts() {
   const handleStockUpdate = async (id: string, stock: number) => {
 
     if (stock < 0) {
-      setError("Invalid stock.")
+      setError("Stock must be zero or greater.")
+      toast.error("Stock must be zero or greater.")
       return
     }
 
@@ -280,8 +351,11 @@ export function useProducts() {
     try {
       await updateProductStock(id, stock)
       await refresh()
+      toast.success("Stock updated successfully.")
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to update stock."))
+      const message = getErrorMessage(error, "Unable to update stock.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -307,5 +381,10 @@ export function useProducts() {
     handleUpdate,
     handleDelete,
     handleStockUpdate,
+    clearCreateForm: () => setCreateForm(emptyForm),
+    clearEditForm: () => {
+      setEditingId("")
+      setEditForm(emptyForm)
+    },
   }
 }

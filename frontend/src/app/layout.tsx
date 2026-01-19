@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import localFont from "next/font/local"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import "./globals.css"
 import { KeycloakProvider } from "@/components/layout/KeycloakProvider"
 
@@ -29,7 +31,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <KeycloakProvider>{children}</KeycloakProvider>
+        <KeycloakProvider>
+          {children}
+          <ToastContainer position="top-center" autoClose={2500} />
+        </KeycloakProvider>
       </body>
     </html>
   );

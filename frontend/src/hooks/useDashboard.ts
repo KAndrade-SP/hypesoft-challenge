@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useKeycloak } from "@react-keycloak/web"
 
+import { toast } from "react-toastify"
 import { getDashboardSummary } from "@/services/dashboard"
 import type { DashboardSummaryDto } from "@/types/api"
 import { getErrorMessage } from "@/utils/errors"
@@ -23,7 +24,9 @@ export function useDashboard() {
       const summary = await getDashboardSummary()
       setData(summary)
     } catch (error) {
-      setError(getErrorMessage(error, "Unable to load dashboard."))
+      const message = getErrorMessage(error, "Unable to load dashboard.")
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }

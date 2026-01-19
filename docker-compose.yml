@@ -6,6 +6,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=example
+    volumes:
+      - mongo_data:/data/db
 
   mongo-express:
     image: mongo-express
@@ -62,3 +64,4 @@ services:
 
 volumes:
   keycloak_data:
+  mongo_data:

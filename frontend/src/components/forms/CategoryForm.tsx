@@ -23,6 +23,8 @@ type CategoryFormProps = {
   onCreate: () => void
   onUpdate: () => void
   onDelete: () => void
+  onClearCreate: () => void
+  onClearEdit: () => void
   loading: boolean
   canWrite: boolean
   canDelete: boolean
@@ -39,6 +41,8 @@ export function CategoryForm({
   onCreate,
   onUpdate,
   onDelete,
+  onClearCreate,
+  onClearEdit,
   loading,
   canWrite,
   canDelete,
@@ -66,15 +70,32 @@ export function CategoryForm({
         <CardHeader>
           <CardTitle>New category</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <Input
-            placeholder="Category name"
-            value={createForm.name}
-            onChange={handleCreateChange}
-          />
-          <Button onClick={onCreate} disabled={loading || !canWrite}>
-            Create category
-          </Button>
+        <CardContent>
+          <form
+            className="space-y-3"
+            onSubmit={(event) => {
+              event.preventDefault()
+              onCreate()
+            }}
+          >
+            <Input
+              placeholder="Category name"
+              value={createForm.name}
+              onChange={handleCreateChange}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={loading || !canWrite}>
+                Create category
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onClearCreate}
+              >
+                Clear form
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
 
@@ -82,35 +103,51 @@ export function CategoryForm({
         <CardHeader>
           <CardTitle>Edit or remove</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <Select
-            placeholder="Select a category"
-            value={editingId}
-            options={categoryOptions}
-            onChange={(value) => setEditingCategory(value)}
-          />
-          <Input
-            placeholder="Category name"
-            value={editForm.name}
-            onChange={handleEditChange}
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={onUpdate}
-              disabled={!editingId || loading || !canWrite}
-            >
-              Save changes
-            </Button>
-            {canDelete ? (
+        <CardContent>
+          <form
+            className="space-y-3"
+            onSubmit={(event) => {
+              event.preventDefault()
+              onUpdate()
+            }}
+          >
+            <Select
+              placeholder="Select a category"
+              value={editingId}
+              options={categoryOptions}
+              onChange={(value) => setEditingCategory(value)}
+            />
+            <Input
+              placeholder="Category name"
+              value={editForm.name}
+              onChange={handleEditChange}
+            />
+            <div className="flex flex-wrap gap-2">
               <Button
-                variant="destructive"
-                onClick={onDelete}
-                disabled={!editingId || loading}
+                type="submit"
+                disabled={!editingId || loading || !canWrite}
               >
-                Delete
+                Save changes
               </Button>
-            ) : null}
-          </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onClearEdit}
+              >
+                Clear form
+              </Button>
+              {canDelete ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={onDelete}
+                  disabled={!editingId || loading}
+                >
+                  Delete
+                </Button>
+              ) : null}
+            </div>
+          </form>
         </CardContent>
       </Card>
     </section>

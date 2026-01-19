@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react"
 import { useKeycloak } from "@react-keycloak/web"
+import { User } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
@@ -34,7 +35,9 @@ export function Topbar({ title, subtitle, searchSlot, actionsSlot }: TopbarProps
           {keycloak?.authenticated ? (
             <>
               <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-white px-3 py-2 text-sm">
-                <span className="h-7 w-7 rounded-full bg-slate-200" />
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                  <User className="h-4 w-4" />
+                </span>
                 <span className="font-medium">{userName}</span>
               </div>
               <Button variant="secondary" size="sm" onClick={() => keycloak.logout()}>
