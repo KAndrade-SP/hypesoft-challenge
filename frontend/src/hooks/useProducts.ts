@@ -89,6 +89,8 @@ export function useProducts() {
   const [categories, setCategories] = useState<CategoryDto[]>([])
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [page, setPage] = useState(1)
+  const pageSize = 10
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -141,10 +143,12 @@ export function useProducts() {
     }
     const data = await getProducts(
       search.trim() || undefined,
-      categoryFilter === "all" ? undefined : categoryFilter
+      categoryFilter === "all" ? undefined : categoryFilter,
+      page,
+      pageSize
     )
     setProducts(data)
-  }, [categoryFilter, initialized, keycloak, search])
+  }, [categoryFilter, initialized, keycloak, page, search])
 
   const loadCategories = useCallback(async () => {
     if (!initialized || !keycloak?.authenticated) {
@@ -187,6 +191,10 @@ export function useProducts() {
     }, 300)
     return () => clearTimeout(timeout)
   }, [loadProducts])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, categoryFilter])
 
   const setEditingProduct = (id: string) => {
 
@@ -368,6 +376,9 @@ export function useProducts() {
     setSearch,
     categoryFilter,
     setCategoryFilter,
+    page,
+    setPage,
+    pageSize,
     loading,
     error,
     refresh,

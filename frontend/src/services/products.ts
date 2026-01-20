@@ -11,10 +11,17 @@ export type CreateProductPayload = {
 
 export type UpdateProductPayload = CreateProductPayload & { id: string }
 
-export async function getProducts(search?: string, categoryId?: string) {
+export async function getProducts(
+  search?: string,
+  categoryId?: string,
+  page?: number,
+  pageSize?: number
+) {
   const params = new URLSearchParams()
   if (search) params.set("search", search)
   if (categoryId) params.set("categoryId", categoryId)
+  if (page) params.set("page", String(page))
+  if (pageSize) params.set("pageSize", String(pageSize))
   const query = params.toString()
   return apiGet<ProductDto[]>(`/api/products${query ? `?${query}` : ""}`)
 }

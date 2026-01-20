@@ -28,6 +28,9 @@ export default function ProductsPage() {
     setSearch,
     categoryFilter,
     setCategoryFilter,
+    page,
+    setPage,
+    pageSize,
     loading,
     createForm,
     setCreateForm,
@@ -136,25 +139,25 @@ export default function ProductsPage() {
               <tbody className="divide-y divide-border/60">
                 {products.map((product) => (
                   <tr key={product.id} className="text-sm">
-                    <td className="py-4">
+                    <td className="py-4 pr-3">
                       <div className="font-medium">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {product.description}
                       </div>
                     </td>
-                    <td>
+                    <td className="pr-3">
                       <Badge variant="outline">{product.categoryName}</Badge>
                     </td>
-                    <td>{currencyFormatter.format(product.price)}</td>
-                    <td>
+                    <td className="pr-3">{currencyFormatter.format(product.price)}</td>
+                    <td className="pr-3">
                       <Badge
                         variant={product.stockQuantity < 10 ? "warning" : "success"}
                       >
-                            {product.stockQuantity} units
-                          </Badge>
-                        </td>
+                        {product.stockQuantity} units
+                      </Badge>
+                    </td>
                     <td>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Input
                           type="number"
                           min={0}
@@ -165,7 +168,7 @@ export default function ProductsPage() {
                           onChange={(event) =>
                             handleStockChange(product.id, event.target.value)
                           }
-                          className="h-9 w-20"
+                          className="h-9 w-20 sm:w-24"
                         />
                         <Button
                           size="sm"
@@ -187,6 +190,29 @@ export default function ProductsPage() {
                 No products found.
               </p>
             ) : null}
+            <div className="flex items-center justify-between border-t border-border/60 pt-4 text-sm">
+              <span className="text-muted-foreground">
+                Page {page}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1 || loading}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={products.length < pageSize || loading}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </section>
